@@ -1,15 +1,16 @@
 #!/usr/bin/Rscript
 
 # Convert a .Rmd file to a .R script
+
 library(knitr)
 library(optparse)
 library(stringr)
 
 option_list = list(
-  make_option(c("-i", "--in_file"), type = "character", default = NULL, 
+  make_option(c("-i", "--in_file"), type = "character", default = NULL,
               help = "dataset file name", metavar = "character"),
-  make_option(c("-d", "--out_dir"), type = "character", 
-              default = "~/thesis/noisy-microbes/community-inference/scripts")
+  make_option(c("-d", "--out_dir"), type = "character",
+              default = "~/noisy-microbes/community-inference/scripts")
 )
 opt_parser = OptionParser(option_list=option_list)
 opt = parse_args(opt_parser)
@@ -25,6 +26,5 @@ if (length(bn) > 2){
 }
 output <- paste0(bn, ".R")
 
-#setwd(opt$out_dir)
 purl(input = input, output = file.path(opt$out_dir, output))
 q()

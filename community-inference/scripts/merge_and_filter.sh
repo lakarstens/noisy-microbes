@@ -1,20 +1,19 @@
 #!/bin/bash
 
 ### Author: Vincent Caruso
-### Date: 7/19/2017
+### Contributors: Lisa Karstens
+### Creation Date: 7/19/2017
+### Last update: 10/24/2018
 ### This script takes truncated forward and reverse reads, merges them, filters them
 ### using the expected errors criterion, and pools them into a single file. It uses
 ### the USEARCH software to perform merging and filtering.
 ### (see www.drive5.com/usearch for detailed documentation)
 
 # Define the scripts path
-SCRIPTS=~/thesis/noisy-microbes/community-inference/scripts
+SCRIPTS=~/noisy-microbes/community-inference/scripts
 
 # Set the default working directory
 WDIR=$PWD
-
-# Set the default mothur groups file
-GROUPFILE="filtered/mothur.groups"
 
 # Set the default truncation parameters
 FTRUNC=230
@@ -63,16 +62,12 @@ do
 	-n|--maxns)
 	    MAXNS="$2"
 	    shift;;
-	-g|--groups)
-	    GROUPFILE="$2"
-	    shift;;
 	-h|--help)
 	    printf "\nUSAGE: merge_and_filter [-w working_directory]\n"
 	    printf "\t\t\t [-f fwd_trunc_pos] [-b rev_trunc_pos]\n"
 	    printf "\t\t\t [-d max_merge_differences] [-p min_merge_pct_id]\n"
 	    printf "\t\t\t [-s min_merge_length] [-l max_merge_length]\n"
 	    printf "\t\t\t [-e max_expected_errors] [-n max_Ns]\n"
-	    printf "\t\t\t [-g mothur_groups_file]\n\n"
 	    exit;;
 	*)
 
@@ -83,7 +78,6 @@ done
 
 # Get full path in case relative path is given by user
 WDIR=$(readlink -f $WDIR)
-#GROUPFILE=$(readlink -f $GROUPFILE)
 
 printf "\nWORKING DIRECTORY: %s" "$WDIR"
 printf "\n\nTRUNCATION parameters:"
@@ -96,7 +90,6 @@ printf "\nMaximum merge length: %d" $MAXMERGELEN
 printf "\n\nFILTER parameters:"
 printf "\nMaximum expected errors: %0.2f" $MAXEE
 printf "\nMaximum Ns: %d" $MAXNS
-printf "\nMothur groups file: %s/%s\n\n" "$PWD" "$GROUPFILE"
 
 # Create the 'truncated' directory, if necessary
 if [ ! -d $WDIR/truncated ]; then
@@ -165,7 +158,7 @@ done
 
 
 # Now filter the individual samples
-for fq in $(ls $WDIR/merged/*_merged.fastq)  
+for fq in $(ls $WDIR/merged/*_merged.fastq)
 do
     bn=$(basename $fq _merged.fastq)
     fasta=$bn"_filtered.fasta"
@@ -174,7 +167,7 @@ do
 	    -fastaout $WDIR/filtered/separate/$fasta \
 	    -fastqout $WDIR/filtered/separate/$fastq \
 	    -fastq_maxee $MAXEE \
-	    -fastq_maxns $MAXNS 
+	    -fastq_maxns $MAXNS
 
     # Generate filter report
     usearch -fastx_info $WDIR/filtered/separate/$fastq \
@@ -183,9 +176,6 @@ do
     # Add sequences to pooled files
     cat $WDIR/filtered/separate/$fasta >> $WDIR/filtered/pooled/pooled_filtered.fasta
     cat $WDIR/filtered/separate/$fastq >> $WDIR/filtered/pooled/pooled_filtered.fastq
-    
-    # Add sequence labels to mothur groups file
-    make_mothur_groups.awk $WDIR/filtered/separate/$fasta >> $GROUPFILE
 
     # Change sequence labels to sample name and a number
 #    printf "\nRelabelling sequences...\n"
@@ -251,4 +241,3 @@ usearch -fastx_info $WDIR/filtered/pooled/pooled_filtered.fastq \
 #printf "\nReformatting read sequences to QIIME format...\n"
 #sed '/^>/ s/\(.*\)\./\1_/' $WDIR/filtered/pooled/pooled_filtered.fasta \
 #    > $WDIR/filtered/pooled/pooled_filtered_qiime.fasta
-

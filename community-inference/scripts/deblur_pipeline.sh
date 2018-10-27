@@ -1,14 +1,15 @@
 #!/bin/bash
 
 ### Author: Vincent Caruso
+### Contributor: Lisa Karstens
 ### Date: 8/3/2017
 ### Purpose: This script implement the Deblur pipeline according to its
 ### recommended usage (see github.com/biocore/deblur).
 
 # Set the default input file and output directory
-INFILE=~/thesis/data/dilution/filtered/pooled_filtered_qiime.fasta
-OUTDIR=~/thesis/results/dilution/deblur
-REF_FILE=~/thesis/references/silva_nr_v128_prokaryotes.fa
+INFILE=~/data/dilution/filtered/pooled_filtered_qiime.fasta
+OUTDIR=~/results/dilution/deblur
+REF_FILE=~/references/silva_nr_v128_prokaryotes.fa
 
 # Parse command-line options
 while [[ $# -gt 0 ]]
@@ -47,7 +48,7 @@ fi
 # First activate the deblur environment in miniconda
 source activate deblur
 
-# Now run the deblur workflow, using the QIIME-formatted file as input
+# Run the deblur workflow, using the QIIME-formatted file as input
 printf "\nRunning the deblur workflow...\n"
 deblur workflow --seqs-fp $INFILE \
        --output-dir $OUTDIR \
@@ -55,7 +56,6 @@ deblur workflow --seqs-fp $INFILE \
        --log-file $OUTDIR/deblur.log \
        --overwrite \
        --jobs-to-start 4
-#       --pos-ref-fp $REF_FILE
 
 # Convert the .biom files to .txt files
 if [ $(stat -c %s $OUTDIR/reference-hit.seqs.fa) != 0 ]; then

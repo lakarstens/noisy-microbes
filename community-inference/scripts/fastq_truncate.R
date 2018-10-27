@@ -7,16 +7,16 @@ knitr::opts_chunk$set(echo = TRUE)
 ## ------------------------------------------------------------------------
 
 library(optparse)
- 
+
 option_list = list(
-  make_option(c("-d", "--data"), type = "character", default = NULL, 
+  make_option(c("-d", "--data"), type = "character", default = NULL,
               help = "data directory"),
   make_option(c("-f", "--ftrunc"), type = "integer", default = 230,
               help = "forward read truncate position"),
   make_option(c("-b", "--rtrunc"), type = "integer", default = 210,
               help = "reverse read truncate position")
 )
- 
+
 opt_parser = OptionParser(option_list=option_list)
 opt = parse_args(opt_parser)
 
@@ -28,10 +28,9 @@ library("dada2"); packageVersion("dada2")
 library("ggplot2")
 library("stringr")
 
-
 ## ----rename files--------------------------------------------------------
 
-data_path <- "~/thesis/data/zymo_neat"
+data_path <- "~/data/zymo_neat"
 data_path <- opt$data
 raw_path <- file.path(data_path, "raw")
 
@@ -78,7 +77,7 @@ if (length(list.files(qual_path)) == 0){
     scale_x_continuous(limits = c(0, 250), breaks = seq(0, 250, 10)) +
     theme(panel.grid.major = element_line(colour="grey", size=0.5)) +
     ggtitle(str_replace(fq, ".fastq", ""))
-  
+
     fname <- str_replace(fq, "fastq", "png")
     ggsave(file.path(qual_path, fname), width = 10, height = 7)
   }
@@ -102,5 +101,3 @@ for (i in seq_along(fastq_Fs)){
                     maxN = Inf, maxEE = c(Inf, Inf), truncQ = 2, rm.phix = TRUE,
                     compress = FALSE, verbose = TRUE)
 }
-
-

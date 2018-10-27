@@ -1,7 +1,9 @@
 #!/bin/bash
 
 ### Author: Vincent Caruso
-### Date: 8/14/2017
+### Contributor: Lisa Karstens
+### Creation Date: 8/14/2017
+### Last Updated: 10/24/2018
 ### Purpose: This is a wrapper shell script that runs each of the
 ### 16S processing method scripts in sequence. This script specifies
 ### paths for the inputs and outputs to each script, and is thus
@@ -12,7 +14,7 @@
 # Set the default input, output, and reference directories
 #INDIR=~/thesis/data/dilution
 OUTDIR=results
-REFDIR=~/thesis/references
+REFDIR=~/references
 
 # Set default sequence length and filtering parameters
 MIN_LEN=221
@@ -22,9 +24,6 @@ RTRUNC=210
 MAXEE_F=2.5
 MAXEE_R=2.5
 POOLED=false
-
-# Set the default processing mode
-#MODE="pooled"
 
 # Parse command-line options
 while [[ $# -gt 0 ]]
@@ -82,7 +81,6 @@ do
     shift
 done
 
-
 # Create the output directory, if necessary
 if [ ! -d "$OUTDIR" ]; then
     mkdir -p $OUTDIR
@@ -103,18 +101,16 @@ printf "\nMaximum expected errors (DADA2 reverse): %0.2f" $MAXEE_R
 printf "\nProcessing mode: %s" "$MODE"
 printf "\n\n"
 
-# First, make sure we have the latest version of the DADA2 script
-# Any updates are made to the Rmd file, which then must be knit to an R file
-SCRIPTS=~/thesis/noisy-microbes/community-inference/scripts
+# Load DADA2 script (saved as Rmd file, which then must be knit to an R file)
+SCRIPTS=~/noisy-microbes/community-inference/scripts
 pushd $SCRIPTS
 rmd2r.R -i dada2_pipeline.Rmd
 popd
 
-# If pooled mode is selected, run 5 pipelines on the pooled fasta file
-#if [[ $MODE == pooled ]]
+# If pooled mode is selected, run 5 pipelines (all but DADA2) on the pooled fasta file
 if $POOLED
 then
-    run_6_pipelines.sh -q "$INDIR"/filtered/pooled/pooled_filtered.fastq \
+    run_5_pipelines.sh -q "$INDIR"/filtered/pooled/pooled_filtered.fastq \
 		       -a "$INDIR"/filtered/pooled/pooled_filtered.fasta \
 		       -o "$OUTDIR" \
 		       -g "$INDIR"/filtered/mothur.groups \
@@ -132,7 +128,6 @@ then
 	    -p
 
 # If separate mode is selected, run five pipelines on each sample fasta separately
-#elif [[ $MODE == separate ]]
 else
     for s in $(ls "$INDIR"/filtered/separate | egrep '^s[0-9]{3}.*\.fastq');
     do
@@ -142,7 +137,7 @@ else
 	fasta="$fname".fasta
 	raw="$sname"_merged.fastq
 
-	run_6_pipelines.sh -q "$INDIR"/filtered/separate/"$fastq" \
+	run_5_pipelines.sh -q "$INDIR"/filtered/separate/"$fastq" \
 			   -a "$INDIR"/filtered/separate/"$fasta" \
 			   -o "$OUTDIR"/"$sname" \
 			   -g "$INDIR"/filtered/mothur.groups \
@@ -162,5 +157,5 @@ else
     Rscript $SCRIPTS/dada2_pipeline.R -i $INDIR -o $OUTDIR/dada2 \
 	    -s $MIN_LEN -l $MAX_LEN \
 	    -F $MAXEE_F -R $MAXEE_R \
-	    
+
 fi

@@ -21,11 +21,11 @@ library(ShortRead)
 options(tibble.print_min = 10, tibble.print_max = 40)
 # options(tibble.width = Inf)
 
-data_path <- "~/thesis/data/dilution"
-result_path <- "~/thesis/results/dilution"
-ref_path <- "~/thesis/references/zymo_SSU"
-analysis_path <- "~/thesis/analysis/dilution"
-script_path <- "~/thesis/noisy-microbes/scripts"
+data_path <- "~/data/dilution"
+result_path <- "~/results/dilution"
+ref_path <- "~/references/zymo_SSU"
+analysis_path <- "~/analysis/dilution"
+script_path <- "~/noisy-microbes/scripts"
 
 source(file.path(script_path, "seq_table_processing.R"))
 
@@ -309,20 +309,13 @@ levels(sample_counts_gg$algorithm) <- list(EM = c("unoise", "deblur", "dada2"), 
 
 
 # Calculate mean signal strengths of each method's reference and non-reference sequences
-# sample_snr <- lapply(method_tables, function(mt){
-#   snr_mean <- mt[, sample_names] %>% sapply(., tapply, mt$reference, function(x) mean(log10(x[x > 0])))
-#   snr_mean <- as.tibble(rownames_to_column(as.data.frame(snr_mean), var = "reference"))
-#   return(snr_mean)
-# })
+
 sample_snr <- lapply(method_tables, function(mt){
   snr_mean <- mt[, sample_names] %>% sapply(., tapply, mt$reference, function(x) mean(log10(x[x > 0])))
   snr_mean <- snr_mean["TRUE", ] / snr_mean["FALSE", ]
-  #snr_mean <- as.tibble(rownames_to_column(as.data.frame(snr_mean), var = "reference"))
   return(snr_mean)
 })
 sample_snr <- do.call("rbind", sample_snr) %>% as.data.frame %>% rownames_to_column(var = "method") %>% as.tibble
-#sample_snr$reference <- as.logical(sample_snr$reference)
-#sample_snr$method <- rep(methods, each = 2)
 sample_snr_gg <- gather(sample_snr, "sample", "mean_snr", one_of(sample_names))
 sample_snr_gg 
 
@@ -521,8 +514,6 @@ snr_box_facet
 
 snr_bees_facet <- ggplot(data = all_table_gg %>% filter(count > 0)) +
   geom_beeswarm(aes(x = sample, y = log10_count, color = factor(reference, levels = c(T, F))), size = 2, cex = 0.05, dodge.width = 0.3) +
-  # labs(title = "Density distribution of log10(read counts) for reference and non-reference sequences",
-  #         subtitle = paste("Dilution series processed with various methods"), x = "sample dilution", y = "log10(read counts)") +
   labs(x = "sample dilution", y = "log10(read count)") +
   scale_color_manual(name = "sequence identity", labels = c("reference", "non-reference"), values = c("blue", "orange")) +
   scale_x_discrete(labels = dilution_labels) +
@@ -531,15 +522,6 @@ snr_bees_facet <- ggplot(data = all_table_gg %>% filter(count > 0)) +
         legend.justification = "center",
         legend.direction = "horizontal")
 snr_bees_facet + guides(color = guide_legend(override.aes = list(size = 4)))
-
-
-# average (mean(log10)) of ref vs. non-ref signal
-# mean_snr_line <- ggplot(sample_sn_gg, aes(x = sample, y = mean_log10)) +
-#   geom_point(data = subset(sample_sn_gg, reference), aes(color = method, group = method)) +
-#   geom_line(data = subset(sample_sn_gg, reference), aes(color = method, group = method)) + 
-#   geom_point(data = subset(sample_sn_gg, !reference), aes(color = method, group = method)) +
-#   geom_line(data = subset(sample_sn_gg, !reference), aes(color = method, group =method))
-# mean_snr_line
 
 mean_snr_line <- ggplot(sample_counts_gg, aes(x = sample, y = mean_snr)) +
   geom_point(aes(color = method, group = method)) +
@@ -693,10 +675,6 @@ ref_abundance_bars <- ggplot(data = all_table_gg %>% filter(reference, method ==
   scale_fill_brewer(palette = "Dark2")
 ref_abundance_bars
 
-# ref_joy <- ggplot(data = all_table_gg %>% filter(reference, method == "uclust")) +
-#   geom_density_ridges(aes(x = id, y = sample, fill = id, height = ..density..), stat = "density")
-# ref_joy
-
 ```
 
 
@@ -746,8 +724,6 @@ class_seqs_comp
 
 ```{r class reads composition}
 
-# class_colors <- brewer.pal(9, "Set1")[c(9, 5, 4, 1, 2)]
-# class_colors <- brewer.pal(8, "Dark2")[c(8, 2, 3, 4, 1)]
 class_colors <- brewer.pal(8, "Accent")[c(8, 7, 1, 6, 5)]
 
 class_reads_comp_sample <- ggplot(all_table_gg %>% filter(count > 0), aes(x = method)) +
@@ -790,7 +766,6 @@ class_reads_comp_method <- ggplot(all_table_gg %>% filter(count > 0), aes(x = sa
 class_reads_comp_method
 
 ```
-
 
 
 Plot Bray-Curtis distances of each dilution sample's reference sequences relative to the neat sample for each method.
@@ -944,24 +919,6 @@ method_tables$dada2 %>% filter(other, rowSums(.[, sample_names] == 0) < 4) %>% s
 # Of these, how many have negative dilution correlations?
 method_tables$uparse %>% filter(other, rowSums(.[, sample_names] == 0) < 4, dilution_cor < 0) %>% 
   select(sample_names, dilution_cor)
-
-```
-
-
-Plot ratio of dada2 ASV_3 to ASV_8.
-```{r}
-
-# ratio <-  dada2_table %>% filter(id %in% c("ASV_3", "ASV_8")) %>% select(sample_names) 
-# ratio <- ratio[1,] / ratio[2,]
-# ratio <- gather(ratio, "sample", "ratio")
-# 
-# ggplot(data = dada2_gg %>% filter(id %in% c("ASV_3", "ASV_8")), aes(x = sample, y = count)) +
-#   geom_line(aes(group = id, color = id)) +
-#   geom_point(aes(color = id))
-# 
-# ggplot(ratio, aes(x = sample, y = ratio)) +
-#   geom_line() +
-#   geom_point()
 
 ```
 

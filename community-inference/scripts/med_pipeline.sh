@@ -1,14 +1,14 @@
 #!/bin/bash
 
 ### Author: Vincent Caruso
+### Contributor: Lisa Karstens
 ### Date: 7/27/2017
 ### Purpose: This script implements the MED pipeline
 ### (see www.merenlab.org for documentation)
 
-
 # Set the default input file and output directory
-INFILE=~/thesis/data/dilution/filtered/pooled_filtered_qiime.fasta
-OUTDIR=~/thesis/results/dilution/med
+INFILE=~/data/dilution/filtered/pooled_filtered_qiime.fasta
+OUTDIR=~/results/dilution/med
 
 # Parse command-line options
 while [[ $# -gt 0 ]]
@@ -48,12 +48,12 @@ source activate med
 o-pad-with-gaps $INFILE \
 		-o $OUTDIR/pooled_filtered_med.fasta
 
-# Finally, run the MED algorithm on the formatted fasta file   
+# Run the MED algorithm on the formatted fasta file
 printf "Running the MED pipeline..."
 decompose $OUTDIR/pooled_filtered_med.fasta -o $OUTDIR \
 	  --skip-check-input-file
 
-# Now check the MED nodes for chimeras using UCHIME
+# Check the MED nodes for chimeras using UCHIME
 if [ ! -d "$OUTDIR"/uchime ];then
     mkdir "$OUTDIR"/uchime
 fi

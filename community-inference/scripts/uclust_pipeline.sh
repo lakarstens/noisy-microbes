@@ -1,14 +1,14 @@
 #!/bin/bash
 
 ### Author: Vincent Caruso
-### Date: 7/13/2017
+### Contributo: Lisa Karstens
+### Creation Date: 7/13/2017
 ### This script implements the UCLUST pipeline through the QIIME SOP
 ### (see www.qiime.org for detailed documentation)
 
-# Set the default input file, output directory, and 16S reference db
-#INFILE=~/thesis/data/dilution/filtered/pooled_filtered_qiime.fasta
+# Set the default input file, output directory, and 16S reference database
 OUTDIR=uclust
-REF_FILE=~/thesis/references/gold.fa
+REF_FILE=~/references/gold.fa
 
 # Parse command-line options
 while [[ $# -gt 0 ]]
@@ -54,7 +54,7 @@ source activate qiime1
 
 ### The rest of the pipeline is executed with QIIME scripts
 
-# Identify chimeric sequences 
+# Identify chimeric sequences
 printf "\nIdentifying chimeric sequences...\n"
 identify_chimeric_seqs.py -m usearch61 \
         -i $INFILE \
@@ -66,11 +66,9 @@ printf "\nRemoving chimeric sequences from sample reads...\n"
 filter_fasta.py -f $INFILE \
         -o $OUTDIR/pooled_nochim.fa \
         -s $OUTDIR/chimeras.txt \
-        -n 
+        -n
 
 # Pick de novo OTUs
-# I need to investigate the parameters that this QIIME script passes to UCLUST.
-# Are sequences sorted by size?
 printf "\nPicking OTUs (de novo) and representative seqeunces, assigning\n"
 printf "taxonomy, performing multiple alignments, and building a\n"
 printf "phylogenetic tree...\n"

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 ### Author: Vincent Caruso
+### Contributor: Lisa Karstens
 ### Date: 9/16/2017
 ### Purpose: This script extracts the paired-end reads that come from the V4
 ### region of the 16S rRNA gene. The input is a pair of fasta files for the
@@ -47,7 +48,6 @@ do
     shift
 done
 
-#fn=$(basename "$FWD")
 sn=${FWD%_R1*.fastq}
 ext=${FWD#*R1}
 bn=$(basename $sn)
